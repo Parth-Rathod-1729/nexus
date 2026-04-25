@@ -1,3 +1,3 @@
 function a(int x) {
-    return "iiit PUNE"
+    return "iiit   PUNE"
 }
