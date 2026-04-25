@@ -47,24 +47,24 @@ async function withRetry(fn, taskName = 'Gemini', maxRetries = 6) {
             const msg = (err?.message || '').toLowerCase();
             // Status can be in err.status or err.httpErrorCode or parsed from JSON message
             let status = err?.status || err?.httpErrorCode || 0;
-            
+
             // If message contains a JSON error with "code", try to extract it
             if (status === 0 && msg.includes('"code":')) {
                 try {
                     const match = msg.match(/"code":\s*(\d+)/);
                     if (match) status = parseInt(match[1]);
-                } catch (e) {}
+                } catch (e) { }
             }
 
-            const isRateLimit   = status === 429 || msg.includes('429') || msg.includes('resourceexhausted') || msg.includes('quota');
+            const isRateLimit = status === 429 || msg.includes('429') || msg.includes('resourceexhausted') || msg.includes('quota');
             const isUnavailable = status === 503 || msg.includes('503') || msg.includes('service unavailable') || msg.includes('overloaded');
-            const isRetryable   = isRateLimit || isUnavailable;
+            const isRetryable = isRateLimit || isUnavailable;
 
             if (!isRetryable) throw err; // auth / bad-request / 404 — don't retry here
 
             const baseDelay = Math.min(4000 * Math.pow(2, i), 60000);
-            const jitter    = baseDelay * 0.2 * (Math.random() - 0.5);
-            const delay     = Math.round(Math.max(2000, baseDelay + jitter));
+            const jitter = baseDelay * 0.2 * (Math.random() - 0.5);
+            const delay = Math.round(Math.max(2000, baseDelay + jitter));
 
             console.warn(`[${taskName}] ${isRateLimit ? '429 Rate limit' : '503 Unavailable'} — retry ${i + 1}/${maxRetries} in ${(delay / 1000).toFixed(1)}s`);
             await new Promise(r => setTimeout(r, delay));
@@ -98,13 +98,13 @@ async function tryWithFallback(buildFn, taskName, jsonMode = false) {
                 taskName
             );
         } catch (err) {
-            const msg    = (err?.message || '').toLowerCase();
+            const msg = (err?.message || '').toLowerCase();
             let status = err?.status || err?.httpErrorCode || 0;
             if (status === 0 && msg.includes('"code":')) {
                 try {
                     const match = msg.match(/"code":\s*(\d+)/);
                     if (match) status = parseInt(match[1]);
-                } catch (e) {}
+                } catch (e) { }
             }
             // Fall to next model on: 503 overloaded OR 404 deprecated/not-found
             const isCapacity = status === 503 || msg.includes('503') || msg.includes('service unavailable') || msg.includes('overloaded');
@@ -124,7 +124,7 @@ async function tryWithFallback(buildFn, taskName, jsonMode = false) {
 export async function checkRelevance(text) {
     return tryWithFallback(async (generate) => {
         const prompt = `Task: Is the following content educational/STEM? Output ONLY valid JSON: {"valid": true} or {"valid": false}.\nContent: ${text.slice(0, 4000)}`;
-        const raw  = await generate(prompt);
+        const raw = await generate(prompt);
         const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
         return json.valid === true;
     }, 'Relevance Check', true);
@@ -146,7 +146,7 @@ Rules:
 - ${narrationRule}
 - Output ONLY the JSON array, no markdown.
 Text: ${text.slice(0, 6000)}`;
-        const raw     = await generate(prompt);
+        const raw = await generate(prompt);
         const cleaned = raw.replace(/```json|```/g, '').trim();
         return JSON.parse(cleaned);
     }, 'Scene Generation', true);
