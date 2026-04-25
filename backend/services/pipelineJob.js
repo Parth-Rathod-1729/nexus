@@ -92,67 +92,83 @@ async function runPipeline(jobId, buffer, numMcqs = 0, numShorts = 0, audioLangu
     if (!Array.isArray(scenes) || scenes.length === 0) {
         throw new Error('AI returned empty or invalid scene list.');
     }
-    scenes = scenes.slice(0, 4);
+    scenes = scenes.slice(0, 3);
 
-    // ── Step 4: Render each scene (skip failures — don't abort) ──────────────
-    const generatedVideoPaths = [];
-    const failedScenes = [];
+    // Initialize progress tracking
+    const sceneStatuses = scenes.map(s => ({ scene_id: s.scene_id, status: 'pending' }));
+    updateJob(jobId, { sceneStatuses });
 
-    for (let idx = 0; idx < scenes.length; idx++) {
-        const scene = scenes[idx];
-        updateJob(jobId, {
-            statusMessage: `Rendering scene ${idx + 1}/${scenes.length}: "${scene.title}"...`
-        });
+    const updateSceneStatus = (sceneId, status) => {
+        const scene = sceneStatuses.find(s => s.scene_id === sceneId);
+        if (scene) {
+            scene.status = status;
+            updateJob(jobId, { sceneStatuses });
+        }
+    };
+
+    // ── Step 4: Render each scene in parallel (skip failures — don't abort) ──────────────
+    updateJob(jobId, { statusMessage: 'Processing scenes in parallel...' });
+    
+    const sceneResults = await Promise.all(scenes.map(async (scene, idx) => {
         console.log(`[Job ${jobId}] Generating Manim code for Scene${scene.scene_id}...`);
 
         let code;
         try {
             code = await generateManimCode(scene);
+            updateSceneStatus(scene.scene_id, 'code_generated');
         } catch (e) {
             console.error(`[Job ${jobId}] Code generation failed for scene ${scene.scene_id}:`, e.message);
-            failedScenes.push(scene.scene_id);
-            continue;
+            updateSceneStatus(scene.scene_id, 'failed');
+            return { failed: true, scene_id: scene.scene_id };
         }
 
+        updateSceneStatus(scene.scene_id, 'rendering');
         const result = await runManimCodeWithRetry(code, scene, jobId);
 
         if (result.success) {
             const rawVideoFile = path.join(jobDir, `scene${scene.scene_id}.mp4`);
             if (fs.existsSync(rawVideoFile)) {
                 // ── Sync Audio (Narration) ──
+                updateSceneStatus(scene.scene_id, 'audio_generating');
                 const syncedVideoFile = path.join(jobDir, `scene${scene.scene_id}_synced.mp4`);
                 console.log(`[Job ${jobId}] Syncing audio for Scene${scene.scene_id}...`);
                 
                 try {
                     const audioResult = await syncAudioWithVideo(rawVideoFile, scene.narration || "", syncedVideoFile, audioLanguage);
                     if (audioResult.success && fs.existsSync(syncedVideoFile)) {
-                        generatedVideoPaths.push(syncedVideoFile);
+                        updateSceneStatus(scene.scene_id, 'completed');
+                        return { success: true, path: syncedVideoFile, scene_id: scene.scene_id };
                     } else {
                         console.warn(`[Job ${jobId}] Audio sync failed for Scene${scene.scene_id}, trying to generate silent video with audio stream.`);
-                        // Try syncing with empty string to at least get an audio stream (fixed audio_handler handles this)
                         const silentResult = await syncAudioWithVideo(rawVideoFile, "", syncedVideoFile, audioLanguage);
                         if (silentResult.success && fs.existsSync(syncedVideoFile)) {
-                            generatedVideoPaths.push(syncedVideoFile);
+                            updateSceneStatus(scene.scene_id, 'completed');
+                            return { success: true, path: syncedVideoFile, scene_id: scene.scene_id };
                         } else {
                             console.error(`[Job ${jobId}] Failed to generate even a silent synced video. Merge may fail.`);
-                            generatedVideoPaths.push(rawVideoFile);
+                            updateSceneStatus(scene.scene_id, 'completed');
+                            return { success: true, path: rawVideoFile, scene_id: scene.scene_id };
                         }
                     }
                 } catch (audioErr) {
                     console.error(`[Job ${jobId}] Audio sync error:`, audioErr.message);
-                    generatedVideoPaths.push(rawVideoFile);
+                    updateSceneStatus(scene.scene_id, 'completed');
+                    return { success: true, path: rawVideoFile, scene_id: scene.scene_id };
                 }
             } else {
                 console.warn(`[Job ${jobId}] Scene${scene.scene_id} reported success but no mp4 found.`);
-                failedScenes.push(scene.scene_id);
+                updateSceneStatus(scene.scene_id, 'failed');
+                return { failed: true, scene_id: scene.scene_id };
             }
         } else {
-            failedScenes.push(scene.scene_id);
+            updateSceneStatus(scene.scene_id, 'failed');
+            return { failed: true, scene_id: scene.scene_id };
         }
+    }));
 
-        // Brief pause between scenes to release OS file handles
-        await new Promise(resolve => setTimeout(resolve, 800));
-    }
+    // Promise.all preserves the order of the `scenes` array
+    const generatedVideoPaths = sceneResults.filter(r => r.success).map(r => r.path);
+    const failedScenes = sceneResults.filter(r => r.failed).map(r => r.scene_id);
 
     const finalOutputPath = path.join(jobDir, 'final.mp4');
 
