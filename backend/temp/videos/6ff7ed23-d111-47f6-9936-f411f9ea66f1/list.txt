@@ -1,3 +1,0 @@
-file 'E:/nexus/backend/temp/videos/6ff7ed23-d111-47f6-9936-f411f9ea66f1/scene1_synced.mp4'
-file 'E:/nexus/backend/temp/videos/6ff7ed23-d111-47f6-9936-f411f9ea66f1/scene2_synced.mp4'
-file 'E:/nexus/backend/temp/videos/6ff7ed23-d111-47f6-9936-f411f9ea66f1/scene3.mp4'
