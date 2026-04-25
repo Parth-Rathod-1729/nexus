@@ -34,10 +34,11 @@ class Scene2(Scene):
         self.play(Create(table_box), Write(table_header))
         
         # Rule 1
-        self.play(mapping_1.animate.set_color(WHITE), run_time=1)
+        self.play(Write(mapping_1))
         self.play(Indicate(mapping_1))
         self.play(dirt.animate.scale(0), run_time=0.5) # Action "Suck"
         self.remove(dirt)
+        self.play(mapping_1.animate.set_color(WHITE), run_time=1)
         self.wait(1)
         
         # Rule 2
