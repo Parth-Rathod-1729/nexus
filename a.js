@@ -1,3 +1,3 @@
 function f(int x) {
-    return "iti pune";
+    return "itii pune";
 }
