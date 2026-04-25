@@ -1,49 +1,49 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Play, Clapperboard, Sparkles, Cpu } from 'lucide-react';
+import { FileText, Play, Clapperboard, Sparkles, Cpu, ArrowRight } from 'lucide-react';
 
 const Hero = () => {
   return (
     <section style={{ 
-      minHeight: '85vh', 
+      minHeight: '80vh', 
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center', 
       justifyContent: 'center',
       position: 'relative',
       textAlign: 'center',
-      padding: '4rem 0'
+      padding: '6rem 0'
     }}>
       {/* Abstract Background Orbs */}
       <motion.div 
         animate={{ 
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
-          x: [0, 50, 0],
-          y: [0, -30, 0]
+          scale: [1, 1.1, 1],
+          opacity: [0.2, 0.3, 0.2],
+          x: [0, 30, 0],
+          y: [0, -20, 0]
         }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         style={{
-          position: 'absolute', top: '10%', left: '20%',
-          width: '300px', height: '300px',
-          background: 'var(--neon-blue)',
-          filter: 'blur(120px)',
+          position: 'absolute', top: '10%', left: '15%',
+          width: '500px', height: '500px',
+          background: 'radial-gradient(circle, var(--neon-blue) 0%, transparent 70%)',
+          filter: 'blur(100px)',
           borderRadius: '50%', zIndex: -1
         }}
       />
       <motion.div 
         animate={{ 
-          scale: [1, 1.5, 1],
-          opacity: [0.2, 0.4, 0.2],
-          x: [0, -60, 0],
-          y: [0, 40, 0]
+          scale: [1, 1.2, 1],
+          opacity: [0.15, 0.25, 0.15],
+          x: [0, -40, 0],
+          y: [0, 30, 0]
         }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         style={{
-          position: 'absolute', top: '30%', right: '15%',
-          width: '400px', height: '400px',
-          background: 'var(--neon-violet)',
-          filter: 'blur(150px)',
+          position: 'absolute', top: '20%', right: '10%',
+          width: '600px', height: '600px',
+          background: 'radial-gradient(circle, var(--neon-violet) 0%, transparent 70%)',
+          filter: 'blur(120px)',
           borderRadius: '50%', zIndex: -1
         }}
       />
@@ -51,71 +51,89 @@ const Hero = () => {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', background: 'rgba(0, 210, 255, 0.1)', border: '1px solid var(--neon-blue)', borderRadius: '20px', marginBottom: '2rem' }}>
-          <Sparkles size={16} color="var(--neon-blue)" />
-          <span style={{ color: 'var(--neon-blue)', fontSize: '0.85rem', fontWeight: 600, letterSpacing: '1px' }}>THE GOOD ULTRON MULTI-AGENT SYSTEM ACTIVATED</span>
-        </div>
-        
-        <h1 style={{ 
-          fontSize: 'clamp(3rem, 6vw, 5.5rem)', 
-          lineHeight: 1.1, 
-          marginBottom: '1.5rem',
-          maxWidth: '1000px',
-          margin: '0 auto 1.5rem auto'
-        }}>
-          Transform PDFs into <br />
-          <span className="text-gradient">Cinematic Learning</span>
-        </h1>
-        
-        <p style={{ 
-          fontSize: '1.2rem', 
-          color: 'var(--text-muted)', 
-          maxWidth: '600px', 
-          margin: '0 auto 3rem auto',
-          lineHeight: 1.6
-        }}>
-          Powered by our Director Agent & Manim visual engine. Upload any document and watch our autonomous AI pipeline weave it into an engaging sequence.
-        </p>
-
-        {/* Dynamic Pipeline Preview */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1rem',
-            margin: '0 auto 3rem auto',
-            background: 'var(--glass-bg)',
-            padding: '1rem 2rem',
-            borderRadius: '50px',
-            border: '1px solid var(--glass-border)'
+          transition={{ delay: 0.2 }}
+          style={{ 
+            display: 'inline-flex', alignItems: 'center', gap: '8px', 
+            padding: '8px 20px', background: 'hsla(var(--neon-cyan-h), 100%, 50%, 0.05)', 
+            border: '1px solid hsla(var(--neon-cyan-h), 100%, 50%, 0.2)', 
+            borderRadius: '100px', marginBottom: '2.5rem',
+            boxShadow: '0 0 20px hsla(var(--neon-cyan-h), 100%, 50%, 0.05)'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)' }}>
-            <FileText size={18} /> <span>PDF</span>
-          </div>
-          <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity }}>→</motion.div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--neon-blue)' }}>
-            <Cpu size={18} /> <span>AI Agents</span>
-          </div>
-          <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}>→</motion.div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--neon-violet)' }}>
-            <Clapperboard size={18} /> <span>Animation Engine</span>
-          </div>
+          <Sparkles size={16} color="var(--neon-cyan)" />
+          <span style={{ color: 'var(--neon-cyan)', fontSize: '0.75rem', fontWeight: 800, letterSpacing: '2px' }}>
+            NEXUS MULTI-AGENT ARCHITECTURE ACTIVATED
+          </span>
         </motion.div>
+        
+        <h1 style={{ 
+          fontSize: 'clamp(3.5rem, 8vw, 6.5rem)', 
+          lineHeight: 1, 
+          marginBottom: '2rem',
+          maxWidth: '1100px',
+          marginInline: 'auto',
+          fontWeight: 800
+        }}>
+          Transform Data into <br />
+          <span className="text-gradient">Cinematic Intelligence</span>
+        </h1>
+        
+        <p style={{ 
+          fontSize: '1.25rem', 
+          color: 'var(--text-muted)', 
+          maxWidth: '650px', 
+          margin: '0 auto 4rem auto',
+          lineHeight: 1.6,
+          fontWeight: 400
+        }}>
+          Powered by the NEXUS Director Agent & Manim synthesis engine. Upload any document and watch our autonomous pipeline weave it into an engaging visual sequence.
+        </p>
 
-        <button className="btn-primary" style={{ padding: '16px 36px', fontSize: '1.1rem' }}>
-          <Play size={20} fill="var(--neon-cyan)" />
-          Start Director Protocol
-        </button>
+        <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center' }}>
+          <motion.button 
+            whileHover={{ scale: 1.05, boxShadow: '0 0 40px hsla(var(--neon-cyan-h), 100%, 50%, 0.3)' }}
+            whileTap={{ scale: 0.95 }}
+            className="btn-primary" 
+            style={{ padding: '18px 40px', fontSize: '1.1rem' }}
+          >
+            <Play size={20} fill="currentColor" />
+            INITIALIZE PROTOCOL
+          </motion.button>
+          
+          <motion.button 
+            whileHover={{ scale: 1.05, background: 'var(--surface-1)' }}
+            whileTap={{ scale: 0.95 }}
+            className="btn-secondary" 
+            style={{ padding: '18px 40px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '12px' }}
+          >
+            VIEW ARCHITECTURE
+            <ArrowRight size={20} />
+          </motion.button>
+        </div>
+
+        {/* Status Indicators */}
+        <div style={{ 
+          marginTop: '6rem', display: 'flex', gap: '4rem', justifyContent: 'center',
+          color: 'var(--text-muted)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '2px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neon-cyan)', boxShadow: '0 0 10px var(--neon-cyan)' }} />
+            RAG PIPELINE: ONLINE
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--neon-violet)', boxShadow: '0 0 10px var(--neon-violet)' }} />
+            SYNTHESIS ENGINE: READY
+          </div>
+        </div>
       </motion.div>
     </section>
   );
 };
 
 export default Hero;
+

@@ -1,25 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --bg-color: #050b14;
-  --bg-gradient: radial-gradient(circle at 50% -20%, #1a103c, #050b14 80%);
-  --text-main: #f0f4f8;
-  --text-muted: #8b9bb4;
+  /* Core Palette (HSL for easier manipulation) */
+  --bg-h: 217;
+  --bg-s: 33%;
+  --bg-l: 5%;
+  --bg-color: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
   
-  --neon-blue: #00d2ff;
-  --neon-cyan: #00ffcc;
-  --neon-violet: #8a2be2;
-  --neon-yellow: #ffea00;
-  --neon-error: #ff4444;
+  --neon-cyan-h: 168;
+  --neon-cyan: hsl(var(--neon-cyan-h), 100%, 50%);
+  --neon-blue-h: 191;
+  --neon-blue: hsl(var(--neon-blue-h), 100%, 50%);
+  --neon-violet-h: 271;
+  --neon-violet: hsl(var(--neon-violet-h), 76%, 53%);
   
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-glow: 0 0 20px rgba(0, 210, 255, 0.1);
+  --text-main: hsl(210, 20%, 96%);
+  --text-muted: hsl(215, 20%, 65%);
   
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --glass-bg: hsla(217, 33%, 10%, 0.4);
+  --glass-border: hsla(0, 0%, 100%, 0.1);
+  --glass-glow: 0 8px 32px 0 hsla(var(--neon-blue-h), 100%, 50%, 0.15);
+  
+  --surface-1: hsla(217, 33%, 15%, 0.5);
+  --surface-2: hsla(217, 33%, 20%, 0.5);
+
+  font-family: 'Inter', system-ui, sans-serif;
   color: var(--text-main);
   background-color: var(--bg-color);
-  background-image: var(--bg-gradient);
+  background-image: 
+    radial-gradient(circle at 50% -20%, hsla(var(--neon-violet-h), 50%, 15%, 0.3), transparent 80%),
+    radial-gradient(circle at 0% 0%, hsla(var(--neon-blue-h), 50%, 10%, 0.2), transparent 50%),
+    radial-gradient(circle at 100% 100%, hsla(var(--neon-cyan-h), 50%, 10%, 0.2), transparent 50%);
   background-attachment: fixed;
   background-size: cover;
 }
@@ -28,136 +39,173 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   min-height: 100vh;
   overflow-x: hidden;
+  line-height: 1.6;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
 }
 
-/* Typography Utilities */
+code, pre {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* --- Utilities --- */
+
 .text-gradient {
-  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-blue), var(--neon-violet));
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-blue), var(--neon-violet));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   display: inline-block;
 }
 
-.text-neon {
-  text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px rgba(0, 255, 204, 0.5);
+.text-glow {
+  text-shadow: 0 0 20px hsla(var(--neon-cyan-h), 100%, 50%, 0.4);
 }
 
-/* Glass & Container Utilities */
 .glass-panel {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  border-radius: 24px;
   box-shadow: var(--glass-glow);
   position: relative;
-  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
 }
 
-/* Add an animated gradient border effect to glass panels occasionally */
-.glass-panel-glow::before {
+.glass-panel::after {
   content: "";
   position: absolute;
-  top: -2px; left: -2px; right: -2px; bottom: -2px;
-  background: linear-gradient(45deg, var(--neon-blue), transparent, var(--neon-violet), transparent);
-  z-index: -1;
-  border-radius: 18px;
-  opacity: 0.3;
-  transition: opacity 0.3s ease;
+  inset: 0;
+  border-radius: inherit;
+  background: url("https://grainy-gradients.vercel.app/noise.svg");
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.glass-panel-glow:hover::before {
-  opacity: 0.8;
-  animation: borderRotate 4s linear infinite;
+.glass-panel:hover {
+  box-shadow: 0 12px 48px 0 hsla(var(--neon-blue-h), 100%, 50%, 0.25);
 }
 
-@keyframes borderRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+/* --- Buttons --- */
+
+.btn-primary {
+  background: linear-gradient(135deg, hsla(var(--neon-cyan-h), 100%, 50%, 0.1), hsla(var(--neon-blue-h), 100%, 50%, 0.1));
+  color: var(--neon-cyan);
+  border: 1px solid hsla(var(--neon-cyan-h), 100%, 50%, 0.3);
+  padding: 14px 32px;
+  border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px hsla(var(--neon-cyan-h), 100%, 50%, 0.1);
 }
 
-/* Auth Shake Error Animation */
-@keyframes shakeError {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
-}
-.shake {
-  animation: shakeError 0.5s ease-in-out;
+.btn-primary:hover {
+  background: hsla(var(--neon-cyan-h), 100%, 50%, 0.2);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 30px hsla(var(--neon-cyan-h), 100%, 50%, 0.4);
+  transform: translateY(-2px);
 }
 
-/* Standard App Layout Layout */
+.btn-secondary {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--glass-border);
+  padding: 14px 32px;
+  border-radius: 100px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  color: var(--text-main);
+  background: var(--surface-1);
+  border-color: var(--text-muted);
+}
+
+/* --- Layout --- */
+
 .app-container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
   display: flex;
   flex-direction: column;
-  gap: 6rem;
+  gap: 8rem;
 }
 
-/* Custom Scrollbar */
+/* --- Custom Scrollbar --- */
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #000;
+  background: var(--bg-color);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--neon-violet);
-  border-radius: 4px;
+  background: var(--surface-2);
+  border: 3px solid var(--bg-color);
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--neon-blue);
+  background: var(--text-muted);
 }
 
-/* Buttons */
-.btn-primary {
-  background: transparent;
-  color: var(--neon-cyan);
-  border: 1px solid var(--neon-cyan);
-  padding: 12px 28px;
-  border-radius: 30px;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+/* --- Animations --- */
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.3; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(1000%); opacity: 0; }
 }
 
-.btn-primary:hover {
-  background: rgba(0, 255, 204, 0.1);
-  box-shadow: 0 0 20px rgba(0, 255, 204, 0.5), inset 0 0 10px rgba(0, 255, 204, 0.2);
-  text-shadow: 0 0 5px var(--neon-cyan);
-}
-
-.btn-primary::after {
-  content: '';
+.scanline {
   position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: all 0.5s ease;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, hsla(var(--neon-cyan-h), 100%, 50%, 0.1), transparent);
+  border-bottom: 1px solid hsla(var(--neon-cyan-h), 100%, 50%, 0.3);
+  box-shadow: 0 4px 20px hsla(var(--neon-cyan-h), 100%, 50%, 0.2);
+  animation: scanline 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+  z-index: 5;
 }
 
-.btn-primary:hover::after {
-  left: 100%;
+.shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+

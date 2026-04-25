@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
-import { Cpu } from 'lucide-react';
+import { Cpu, LogOut, Menu, X } from 'lucide-react';
 import './App.css';
 
 // Component imports
@@ -26,7 +26,6 @@ export function useVideo() {
 
 function VideoProvider({ children }) {
   const [videoData, setVideoData] = useState(null); 
-  // videoData = { url, statusMessage, scenesRendered, scenesTotal } | null
   return (
     <VideoContext.Provider value={{ videoData, setVideoData }}>
       {children}
@@ -34,45 +33,86 @@ function VideoProvider({ children }) {
   );
 }
 
+// ── Page Wrapper for Transitions ─────────────────────────────────────────────
+const PageWrapper = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+  >
+    {children}
+  </motion.div>
+);
+
 // ── Navbar ───────────────────────────────────────────────────────────────────
 const Navbar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}
       style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        padding: '20px 40px',
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+        padding: isScrolled ? '15px 40px' : '25px 40px',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        background: 'rgba(5, 11, 20, 0.6)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid var(--glass-border)'
+        background: isScrolled ? 'rgba(5, 11, 20, 0.8)' : 'transparent',
+        backdropFilter: isScrolled ? 'blur(20px)' : 'none',
+        borderBottom: isScrolled ? '1px solid var(--glass-border)' : '1px solid transparent',
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <Cpu size={28} color="var(--neon-cyan)" />
-        <span style={{
+      <div 
+        style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+        onClick={() => navigate('/dashboard')}
+      >
+        <Cpu size={32} className="text-glow" color="var(--neon-cyan)" />
+        <span className="text-gradient" style={{
           fontFamily: "'Space Grotesk', sans-serif",
-          fontWeight: 800, fontSize: '1.4rem', letterSpacing: '1px'
-        }} className="text-gradient">
-          The Good Ultron
+          fontWeight: 800, fontSize: '1.5rem', letterSpacing: '1px'
+        }}>
+          NEXUS
         </span>
       </div>
-      <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-        <a href="#pipeline" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.3s' }}
-          onMouseOver={e => e.target.style.color = 'var(--neon-cyan)'}
-          onMouseOut={e => e.target.style.color = 'var(--text-muted)'}>
-          Pipeline
-        </a>
-        <a href="#generator" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500, transition: 'color 0.3s' }}
-          onMouseOver={e => e.target.style.color = 'var(--neon-cyan)'}
-          onMouseOut={e => e.target.style.color = 'var(--text-muted)'}>
-          Scene Demo
-        </a>
-        <button className="btn-primary" style={{ padding: '8px 20px' }}
-          onClick={() => window.location.href = '/'}>
-          System Logout
+      
+      <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+        {['Pipeline', 'Generator', 'Impact'].map((item) => (
+          <a 
+            key={item}
+            href={`#${item.toLowerCase()}`} 
+            className="nav-link"
+            style={{ 
+              color: 'var(--text-muted)', 
+              textDecoration: 'none', 
+              fontSize: '0.9rem', 
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              letterSpacing: '1px'
+            }}
+          >
+            {item}
+          </a>
+        ))}
+        <button 
+          className="btn-primary" 
+          style={{ padding: '10px 24px', fontSize: '0.85rem' }}
+          onClick={handleLogout}
+        >
+          <LogOut size={16} />
+          TERMINATE SESSION
         </button>
       </div>
     </motion.nav>
@@ -85,34 +125,31 @@ const Dashboard = () => {
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: 0.8 } }}
-      exit={{ opacity: 0, y: 50, transition: { duration: 0.5 } }}
-    >
+    <PageWrapper>
       <motion.div style={{
-        position: 'fixed', top: 0, left: 0, right: 0, height: '3px',
+        position: 'fixed', top: 0, left: 0, right: 0, height: '4px',
         background: 'linear-gradient(90deg, var(--neon-cyan), var(--neon-blue), var(--neon-violet))',
-        transformOrigin: '0%', scaleX, zIndex: 101
+        transformOrigin: '0%', scaleX, zIndex: 1001
       }} />
       <Navbar />
-      <main className="app-container" style={{ paddingTop: '100px' }}>
-        <Hero />
-        <UploadSection />
-        <PipelineVisualizer />
-        <SceneGenerator />
-        <VideoPreview />
-        <ImpactSection />
+      <main className="app-container" style={{ paddingTop: '120px' }}>
+        <section id="hero"><Hero /></section>
+        <section id="upload"><UploadSection /></section>
+        <section id="pipeline"><PipelineVisualizer /></section>
+        <section id="generator"><SceneGenerator /></section>
+        <section id="preview"><VideoPreview /></section>
+        <section id="impact"><ImpactSection /></section>
       </main>
       <footer style={{
-        marginTop: '100px', padding: '40px', textAlign: 'center',
-        borderTop: '1px solid var(--glass-border)', color: 'var(--text-muted)'
+        marginTop: '120px', padding: '60px 40px', textAlign: 'center',
+        borderTop: '1px solid var(--glass-border)', color: 'var(--text-muted)',
+        background: 'rgba(0,0,0,0.2)'
       }}>
-        <p style={{ fontSize: '0.9rem' }}>
-          Project "The Good Ultron" - Cinematic AI Systems © {new Date().getFullYear()}
+        <p style={{ fontSize: '0.9rem', letterSpacing: '1px' }}>
+          PROJECT NEXUS // CINEMATIC AI SYSTEMS © {new Date().getFullYear()}
         </p>
       </footer>
-    </motion.div>
+    </PageWrapper>
   );
 };
 
@@ -122,12 +159,12 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+        <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+        <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/login" element={<PageWrapper><AdminLogin /></PageWrapper>} />
+        <Route path="/admin/dashboard" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
       </Routes>
     </AnimatePresence>
   );
