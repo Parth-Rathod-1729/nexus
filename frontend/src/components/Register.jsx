@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, User, Lock, Mail, Activity, CheckCircle, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, User, Lock, Mail, Activity, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import AuthBackground from './AuthBackground';
 
 const pageVariants = {
@@ -20,6 +20,8 @@ const Register = () => {
   const [focusedId, setFocusedId] = useState(null);
   const [status, setStatus] = useState('idle'); // idle, loading, success, error
   const [errorMsg, setErrorMsg] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
@@ -208,14 +210,14 @@ const Register = () => {
             </div>
             <input 
               required
-              type="password" 
+              type={showPassword ? "text" : "password"} 
               placeholder="Encryption Key (Password)"
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
               onFocus={() => setFocusedId('pass1')}
               onBlur={() => setFocusedId(null)}
               style={{
-                width: '100%', padding: '14px 20px 14px 48px',
+                width: '100%', padding: '14px 48px 14px 48px',
                 background: 'rgba(0,0,0,0.4)',
                 border: `1px solid ${focusedId === 'pass1' ? 'var(--neon-violet)' : 'var(--glass-border)'}`,
                 borderRadius: '12px', color: '#fff', fontSize: '0.95rem', outline: 'none',
@@ -223,6 +225,18 @@ const Register = () => {
                 transition: 'all 0.3s'
               }}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute', top: '50%', right: '16px', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+                color: focusedId === 'pass1' ? 'var(--neon-violet)' : 'var(--text-muted)',
+                transition: 'color 0.3s', display: 'flex', alignItems: 'center'
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </motion.div>
 
           <motion.div variants={itemVariants} style={{ position: 'relative' }}>
@@ -231,14 +245,14 @@ const Register = () => {
             </div>
             <input 
               required
-              type="password" 
+              type={showConfirm ? "text" : "password"} 
               placeholder="Verify Encryption Key"
               value={formData.confirm}
               onChange={(e) => setFormData({...formData, confirm: e.target.value})}
               onFocus={() => setFocusedId('pass2')}
               onBlur={() => setFocusedId(null)}
               style={{
-                width: '100%', padding: '14px 20px 14px 48px',
+                width: '100%', padding: '14px 48px 14px 48px',
                 background: 'rgba(0,0,0,0.4)',
                 border: `1px solid ${focusedId === 'pass2' ? 'var(--neon-violet)' : 'var(--glass-border)'}`,
                 borderRadius: '12px', color: '#fff', fontSize: '0.95rem', outline: 'none',
@@ -246,6 +260,18 @@ const Register = () => {
                 transition: 'all 0.3s'
               }}
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirm(!showConfirm)}
+              style={{
+                position: 'absolute', top: '50%', right: '16px', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+                color: focusedId === 'pass2' ? 'var(--neon-violet)' : 'var(--text-muted)',
+                transition: 'color 0.3s', display: 'flex', alignItems: 'center'
+              }}
+            >
+              {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
             {formData.password && formData.confirm && formData.password !== formData.confirm && (
               <p style={{ color: 'var(--neon-error)', fontSize: '0.8rem', position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>Mismatch</p>
             )}

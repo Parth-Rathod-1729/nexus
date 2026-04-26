@@ -98,6 +98,10 @@ const Hero = () => {
           <motion.button 
             whileHover={{ scale: 1.05, boxShadow: '0 0 40px hsla(var(--neon-cyan-h), 100%, 50%, 0.3)' }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              const el = document.getElementById('upload');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
             className="btn-primary" 
             style={{ padding: '18px 40px', fontSize: '1.1rem' }}
           >
@@ -108,6 +112,10 @@ const Hero = () => {
           <motion.button 
             whileHover={{ scale: 1.05, background: 'var(--surface-1)' }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              const el = document.getElementById('pipeline');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
             className="btn-secondary" 
             style={{ padding: '18px 40px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '12px' }}
           >

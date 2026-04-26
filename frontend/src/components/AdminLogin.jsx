@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ShieldAlert, User, Lock, Activity, CheckCircle, ArrowLeft } from 'lucide-react';
+import { ShieldAlert, User, Lock, Activity, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import AuthBackground from './AuthBackground';
 
 const pageVariants = {
@@ -19,6 +19,7 @@ const AdminLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [focusedId, setFocusedId] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   
   const [status, setStatus] = useState('idle'); // idle, loading, error, success
   const navigate = useNavigate();
@@ -193,14 +194,14 @@ const AdminLogin = () => {
               <Lock size={20} />
             </div>
             <input 
-              type="password" 
+              type={showPassword ? "text" : "password"} 
               placeholder="Admin Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedId('pass')}
               onBlur={() => setFocusedId(null)}
               style={{
-                width: '100%', padding: '16px 20px 16px 48px',
+                width: '100%', padding: '16px 48px 16px 48px',
                 background: 'rgba(0,0,0,0.4)',
                 border: `1px solid ${focusedId === 'pass' ? '#FFA500' : 'var(--glass-border)'}`,
                 borderRadius: '12px', color: '#fff', fontSize: '1rem', outline: 'none',
@@ -208,6 +209,18 @@ const AdminLogin = () => {
                 transition: 'all 0.3s'
               }}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute', top: '50%', right: '16px', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+                color: focusedId === 'pass' ? '#FFA500' : 'var(--text-muted)',
+                transition: 'color 0.3s', display: 'flex', alignItems: 'center'
+              }}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </motion.div>
 
           {status === 'error' && (
