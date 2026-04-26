@@ -22,19 +22,19 @@ function updateJob(jobId, patch) {
     jobsStore[jobId] = { ...jobsStore[jobId], ...patch };
 }
 
-export async function startPipelineJob(jobId, buffer, numMcqs = 0, numShorts = 0, audioLanguage = 'english') {
+export async function startPipelineJob(jobId, buffer, numMcqs = 0, numShorts = 0, audioLanguage = 'english', focusTopic = "") {
 
 
     if (activeJobs >= MAX_CONCURRENT_JOBS) {
         updateJob(jobId, { status: 'queued', statusMessage: 'Waiting in queue...' });
-        jobQueue.push({ jobId, buffer, numMcqs, numShorts, audioLanguage });
+        jobQueue.push({ jobId, buffer, numMcqs, numShorts, audioLanguage, focusTopic });
         return;
     }
 
     try {
         activeJobs++;
         updateJob(jobId, { status: 'processing', statusMessage: 'Starting pipeline...' });
-        await runPipeline(jobId, buffer, numMcqs, numShorts, audioLanguage);
+        await runPipeline(jobId, buffer, numMcqs, numShorts, audioLanguage, focusTopic);
 
 
     } catch (error) {
@@ -54,11 +54,11 @@ export async function startPipelineJob(jobId, buffer, numMcqs = 0, numShorts = 0
 function processNextInQueue() {
     if (jobQueue.length > 0 && activeJobs < MAX_CONCURRENT_JOBS) {
         const nextJob = jobQueue.shift();
-        startPipelineJob(nextJob.jobId, nextJob.buffer, nextJob.numMcqs, nextJob.numShorts, nextJob.audioLanguage);
+        startPipelineJob(nextJob.jobId, nextJob.buffer, nextJob.numMcqs, nextJob.numShorts, nextJob.audioLanguage, nextJob.focusTopic);
     }
 }
 
-async function runPipeline(jobId, buffer, numMcqs = 0, numShorts = 0, audioLanguage = 'english') {
+async function runPipeline(jobId, buffer, numMcqs = 0, numShorts = 0, audioLanguage = 'english', focusTopic = "") {
 
 
     const jobDir = path.resolve(`./temp/videos/${jobId}`);
@@ -84,7 +84,7 @@ async function runPipeline(jobId, buffer, numMcqs = 0, numShorts = 0, audioLangu
     console.log(`[Job ${jobId}] Generating scenes JSON...`);
     let scenes = [];
     try {
-        scenes = await generateScenes(text, audioLanguage);
+        scenes = await generateScenes(text, audioLanguage, focusTopic);
     } catch (e) {
         throw new Error(`Scene generation failed: ${e.message}`);
     }

@@ -130,7 +130,7 @@ export async function checkRelevance(text) {
     }, 'Relevance Check', true);
 }
 
-export async function generateScenes(text, audioLanguage = 'english') {
+export async function generateScenes(text, audioLanguage = 'english', focusTopic = "") {
     return tryWithFallback(async (generate) => {
         let narrationRule = "narration: 1-2 clear, teacher-like sentences explaining the scene's concept.";
         if (audioLanguage === 'hinglish') {
@@ -139,7 +139,18 @@ export async function generateScenes(text, audioLanguage = 'english') {
             narrationRule = "narration: 1-2 clear, teacher-like sentences explaining the scene's concept in pure Hindi (written in Devanagari script).";
         }
 
-        const prompt = `Convert the following text into a JSON array of max 3 educational animation scenes.
+        let focusPrompt = "";
+        if (focusTopic && focusTopic.trim()) {
+            focusPrompt = `
+Focus Topic: ${focusTopic}
+Instructions:
+- Prioritize this topic in ALL scenes
+- Generate explanations mainly about this topic
+- Align visuals and narration with this topic
+- Reduce or ignore unrelated content from the document`;
+        }
+
+        const prompt = `Convert the following text into a JSON array of max 3 educational animation scenes.${focusPrompt}
 
 STRICT NARRATION RULES (CRITICAL):
 1. Narration must strictly describe the visual_plan and match the animation step-by-step.
