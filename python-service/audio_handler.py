@@ -1,3 +1,5 @@
+
+
 import sys
 import json
 import os
@@ -18,17 +20,25 @@ def process_audio_video(video_path, narration_text, output_path, language='engli
     
     try:
         # 1. Generate TTS or Silence
-        if not narration_text.strip():
+        is_existing_file = narration_text.lower().endswith(".mp3") and os.path.exists(narration_text)
+        
+        if is_existing_file:
+            # If it's already a path to an mp3 (from CAMB.AI), use it directly
+            source_audio = narration_text
+            temp_audio = None
+        elif not narration_text.strip():
             # Create a 1-second silent mp3 if no narration
+            temp_audio = output_path.replace(".mp4", f"_temp_{os.getpid()}.mp3")
             from moviepy import AudioArrayClip
             import numpy as np
             silence_arr = np.zeros((44100, 2))
             audio = AudioArrayClip(silence_arr, fps=44100)
             audio.write_audiofile(temp_audio, logger=None)
+            source_audio = temp_audio
         else:
+            temp_audio = output_path.replace(".mp4", f"_temp_{os.getpid()}.mp3")
             tld = 'com'
             if language == 'hinglish':
-                # For Hinglish, we use 'en' with Indian accent for Roman script.
                 lang_code = 'en'
                 tld = 'co.in'
             elif language == 'hindi':
@@ -39,10 +49,11 @@ def process_audio_video(video_path, narration_text, output_path, language='engli
             
             tts = gTTS(text=narration_text, lang=lang_code, tld=tld)
             tts.save(temp_audio)
+            source_audio = temp_audio
         
         # 2. Load video and audio
         video = VideoFileClip(video_path)
-        audio = AudioFileClip(temp_audio)
+        audio = AudioFileClip(source_audio)
         
         # 3. Handle duration mismatch
         v_dur = video.duration
@@ -93,7 +104,7 @@ def process_audio_video(video_path, narration_text, output_path, language='engli
         # Cleanup
         video.close()
         audio.close()
-        if os.path.exists(temp_audio):
+        if temp_audio and os.path.exists(temp_audio):
             os.remove(temp_audio)
         if os.path.exists(temp_m4a):
             os.remove(temp_m4a)
@@ -103,7 +114,7 @@ def process_audio_video(video_path, narration_text, output_path, language='engli
         # Cleanup on error
         if 'video' in locals(): video.close()
         if 'audio' in locals(): audio.close()
-        if os.path.exists(temp_audio): os.remove(temp_audio)
+        if 'temp_audio' in locals() and temp_audio and os.path.exists(temp_audio): os.remove(temp_audio)
         return {"success": False, "error": str(e)}
 
 if __name__ == "__main__":

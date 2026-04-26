@@ -139,10 +139,18 @@ export async function generateScenes(text, audioLanguage = 'english') {
             narrationRule = "narration: 1-2 clear, teacher-like sentences explaining the scene's concept in pure Hindi (written in Devanagari script).";
         }
 
-        const prompt = `Convert the following text to a JSON array of max 3 educational animation scenes.
-Rules:
-- scene_id must be an integer (1, 2, 3)
-- Keys: scene_id (int), title (string), concept (string), explanation (string), visual_plan (string), narration (string)
+        const prompt = `Convert the following text into a JSON array of max 3 educational animation scenes.
+
+STRICT NARRATION RULES (CRITICAL):
+1. Narration must strictly describe the visual_plan and match the animation step-by-step.
+2. Avoid generic definitions or textbook-style explanations.
+3. Reference visual elements (text, shapes, movement) explicitly. Use phrases like "In this scene...", "Here we see...", "This circle represents...".
+4. Describe WHAT is being shown and WHAT is moving/changing.
+5. Length: 1-2 short sentences only. Must match scene duration.
+6. Narration must be DIFFERENT for each scene and derived from the scene's title, concept, and visual_plan.
+
+JSON Keys: scene_id (int), title (string), concept (string), explanation (string), visual_plan (string), narration (string)
+
 - ${narrationRule}
 - Output ONLY the JSON array, no markdown.
 Text: ${text.slice(0, 6000)}`;
@@ -188,4 +196,41 @@ ${code}`;
         const raw = await generate(prompt);
         return raw.replace(/```python|```/g, '').trim();
     }, 'Code Fix');
+}
+
+/**
+ * Validation helper for narration quality.
+ */
+export function isNarrationGeneric(scene) {
+    if (!scene.narration || scene.narration.trim().length < 10) return true;
+    
+    const narration = scene.narration.toLowerCase();
+    const visualMarkers = ["in this", "here", "see", "shown", "represents", "illustrates", "shows", "appears", "moving", "highlight"];
+    
+    const hasVisualMarker = visualMarkers.some(marker => narration.includes(marker));
+    return !hasVisualMarker;
+}
+
+/**
+ * Regenerates narration for a specific scene to be more visually linked.
+ */
+export async function regenerateNarration(scene, audioLanguage = 'english') {
+    return tryWithFallback(async (generate) => {
+        const prompt = `Rewrite the narration for this educational animation scene to be DIRECTLY LINKED to the visuals.
+STRICT RULES:
+1. Describe EXACTLY what is shown in this scene (shapes, text, movement).
+2. Reference visual elements explicitly. Use phrases like "In this scene...", "Here we see...", "This circle represents...".
+3. NO generic theory or textbook definitions.
+4. 1-2 short sentences only.
+5. Language: ${audioLanguage}.
+
+Scene Context:
+Title: ${scene.title}
+Concept: ${scene.concept}
+Visual Plan: ${scene.visual_plan}
+
+Output ONLY the new narration string.`;
+        const raw = await generate(prompt);
+        return raw.replace(/["']/g, '').trim();
+    }, `Narration Regen Scene${scene.scene_id}`);
 }

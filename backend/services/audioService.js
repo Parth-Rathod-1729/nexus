@@ -6,7 +6,7 @@ import fs from 'fs';
 
 const CAMB_TTS_URL = 'https://client.camb.ai/apis/tts-stream';
 const CAMB_VOICE_ID = 147320;           // Default English natural voice
-const CAMB_MODEL    = 'mars-8.1-flash-beta'; // Expressive, teacher-style delivery
+const CAMB_MODEL = 'mars-8.1-flash-beta'; // Expressive, teacher-style delivery
 const CAMB_LANGUAGE = 'en-us';
 
 /**

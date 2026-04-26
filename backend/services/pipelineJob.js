@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { extractText } from '../utils/pdfExtractor.js';
-import { checkRelevance, generateScenes, generateManimCode } from './gemini.js';
+import { checkRelevance, generateScenes, generateManimCode, isNarrationGeneric, regenerateNarration } from './gemini.js';
 import { runManimCodeWithRetry } from './manimRunner.js';
 import { mergeVideos } from '../utils/videoMerger.js';
 import { generateFallbackVideo } from '../utils/fallbackVideoGenerator.js';
@@ -94,6 +94,23 @@ async function runPipeline(jobId, buffer, numMcqs = 0, numShorts = 0, audioLangu
     }
     scenes = scenes.slice(0, 3);
 
+    // ── Validation: Fix generic narration (Requirement 7) ─────────────────────
+    updateJob(jobId, { statusMessage: 'Validating narration quality...' });
+    for (let i = 0; i < scenes.length; i++) {
+        if (isNarrationGeneric(scenes[i])) {
+            console.log(`[Job ${jobId}] Scene${scenes[i].scene_id} narration is generic. Regenerating...`);
+            try {
+                const fixed = await regenerateNarration(scenes[i], audioLanguage);
+                if (fixed && fixed.length > 5) {
+                    scenes[i].narration = fixed;
+                    console.log(`[Job ${jobId}] Scene${scenes[i].scene_id} narration improved: "${fixed}"`);
+                }
+            } catch (err) {
+                console.warn(`[Job ${jobId}] Failed to regenerate narration for Scene${scenes[i].scene_id}:`, err.message);
+            }
+        }
+    }
+
     // Initialize progress tracking
     const sceneStatuses = scenes.map(s => ({ scene_id: s.scene_id, status: 'pending' }));
     updateJob(jobId, { sceneStatuses });
@@ -108,7 +125,7 @@ async function runPipeline(jobId, buffer, numMcqs = 0, numShorts = 0, audioLangu
 
     // ── Step 4: Render each scene in parallel (skip failures — don't abort) ──────────────
     updateJob(jobId, { statusMessage: 'Processing scenes in parallel...' });
-    
+
     const sceneResults = await Promise.all(scenes.map(async (scene, idx) => {
         console.log(`[Job ${jobId}] Generating Manim code for Scene${scene.scene_id}...`);
 
@@ -132,7 +149,7 @@ async function runPipeline(jobId, buffer, numMcqs = 0, numShorts = 0, audioLangu
                 updateSceneStatus(scene.scene_id, 'audio_generating');
                 const syncedVideoFile = path.join(jobDir, `scene${scene.scene_id}_synced.mp4`);
                 console.log(`[Job ${jobId}] Syncing audio for Scene${scene.scene_id}...`);
-                
+
                 try {
                     const audioResult = await syncAudioWithVideo(rawVideoFile, scene.narration || "", syncedVideoFile, audioLanguage);
                     if (audioResult.success && fs.existsSync(syncedVideoFile)) {
@@ -203,12 +220,12 @@ async function runPipeline(jobId, buffer, numMcqs = 0, numShorts = 0, audioLangu
             updateJob(jobId, { statusMessage: `Generating questions (${numMcqs} MCQ, ${numShorts} Short)...` });
             console.log(`[Job ${jobId}] Generating questions (${numMcqs} MCQ, ${numShorts} Short)...`);
             const questions = await generateQuestionsFromText(text, numMcqs, numShorts);
-            
+
             await Question.create({
                 jobId,
                 questions
             });
-            
+
             console.log(`[Job ${jobId}] Questions generated successfully. Count: ${questions?.length || 0}`);
             questionsGenerated = true;
         } catch (qErr) {
