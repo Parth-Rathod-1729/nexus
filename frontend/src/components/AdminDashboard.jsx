@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Trash2, LogOut, Users } from 'lucide-react';
+import { useContext } from 'react';
+import { LogoutContext } from '../contexts';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -9,6 +11,7 @@ const AdminDashboard = () => {
   const [errorMsg, setErrorMsg] = useState('');
   
   const navigate = useNavigate();
+  const { handleLogout: triggerLogout } = useContext(LogoutContext);
 
   useEffect(() => {
     fetchUsers();
@@ -74,8 +77,7 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    navigate('/admin/login');
+    triggerLogout('/admin/login');
   };
 
   return (

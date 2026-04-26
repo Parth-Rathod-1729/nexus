@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldAlert, User, Lock, Activity, CheckCircle } from 'lucide-react';
+import { ShieldAlert, User, Lock, Activity, CheckCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import AuthBackground from './AuthBackground';
 
 const pageVariants = {
@@ -19,6 +19,7 @@ const Login = () => {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [focusedId, setFocusedId] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   
   const [status, setStatus] = useState('idle'); // idle, loading, error, success
   const navigate = useNavigate();
@@ -71,6 +72,35 @@ const Login = () => {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
       <AuthBackground />
+      
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        whileHover={{ x: -5, color: 'var(--neon-cyan)' }}
+        onClick={() => navigate('/')}
+        style={{
+          position: 'absolute',
+          top: '40px',
+          left: '40px',
+          background: 'none',
+          border: 'none',
+          color: 'var(--text-muted)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          cursor: 'pointer',
+          zIndex: 100,
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          letterSpacing: '1px',
+          textTransform: 'uppercase'
+        }}
+      >
+        <ArrowLeft size={20} />
+        RETURN TO HOME
+      </motion.button>
       
       <motion.div
         variants={pageVariants}
@@ -166,14 +196,14 @@ const Login = () => {
               <Lock size={20} />
             </div>
             <input 
-              type="password" 
+              type={showPassword ? 'text' : 'password'} 
               placeholder="Passcode"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedId('pass')}
               onBlur={() => setFocusedId(null)}
               style={{
-                width: '100%', padding: '16px 20px 16px 48px',
+                width: '100%', padding: '16px 48px 16px 48px',
                 background: 'rgba(0,0,0,0.4)',
                 border: `1px solid ${focusedId === 'pass' ? 'var(--neon-violet)' : 'var(--glass-border)'}`,
                 borderRadius: '12px', color: '#fff', fontSize: '1rem', outline: 'none',
@@ -181,6 +211,18 @@ const Login = () => {
                 transition: 'all 0.3s'
               }}
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute', top: '50%', right: '16px', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
+                color: focusedId === 'pass' ? 'var(--neon-violet)' : 'var(--text-muted)',
+                transition: 'color 0.3s', display: 'flex', alignItems: 'center'
+              }}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </motion.div>
 
           {status === 'error' && (

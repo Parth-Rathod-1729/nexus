@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UploadCloud, File, Activity, Search, CheckCircle, AlertCircle, Cpu, Settings, Zap, ArrowRight } from 'lucide-react';
-import { useVideo } from '../App';
+import { useVideo } from '../contexts';
 
 const BACKEND = () => {
   const raw = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:4000';

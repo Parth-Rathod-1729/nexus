@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useSpring, AnimatePresence } from 'framer-motion';
 import { Cpu, LogOut, Menu, X } from 'lucide-react';
 import './App.css';
+import { VideoContext, LogoutContext, useVideo } from './contexts';
 
 // Component imports
 import Hero from './components/Hero';
@@ -16,19 +17,41 @@ import Register from './components/Register';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import Home from './components/Home';
+import LogoutOverlay from './components/LogoutOverlay';
+import LogoutConfirmModal from './components/LogoutConfirmModal';
 
-// ── Video Context ────────────────────────────────────────────────────────────
-export const VideoContext = createContext(null);
+function AppProviders({ children }) {
+  const [videoData, setVideoData] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState('/login');
 
-export function useVideo() {
-  return useContext(VideoContext);
-}
+  const handleLogout = (redirectPath = '/login') => {
+    const finalPath = typeof redirectPath === 'string' ? redirectPath : '/login';
+    setPendingRedirect(finalPath);
+    setShowConfirm(true);
+  };
 
-function VideoProvider({ children }) {
-  const [videoData, setVideoData] = useState(null); 
+  const confirmLogout = async () => {
+    setShowConfirm(false);
+    setIsLoggingOut(true);
+    // Wait for animation to play
+    await new Promise(resolve => setTimeout(resolve, 2800));
+    localStorage.clear();
+    window.location.href = pendingRedirect;
+  };
+
+  const cancelLogout = () => {
+    setShowConfirm(false);
+  };
+
   return (
     <VideoContext.Provider value={{ videoData, setVideoData }}>
-      {children}
+      <LogoutContext.Provider value={{ isLoggingOut, handleLogout }}>
+        {children}
+        <LogoutConfirmModal isOpen={showConfirm} onConfirm={confirmLogout} onCancel={cancelLogout} />
+        <LogoutOverlay isOpen={isLoggingOut} />
+      </LogoutContext.Provider>
     </VideoContext.Provider>
   );
 }
@@ -48,6 +71,7 @@ const PageWrapper = ({ children }) => (
 // ── Navbar ───────────────────────────────────────────────────────────────────
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { handleLogout } = useContext(LogoutContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,11 +79,6 @@ const Navbar = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
-  };
 
   return (
     <motion.nav
@@ -75,7 +94,7 @@ const Navbar = () => {
         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
       }}
     >
-      <div 
+      <div
         style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
         onClick={() => navigate('/dashboard')}
       >
@@ -87,17 +106,17 @@ const Navbar = () => {
           NEXUS
         </span>
       </div>
-      
+
       <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
         {['Pipeline', 'Generator', 'Impact'].map((item) => (
-          <a 
+          <a
             key={item}
-            href={`#${item.toLowerCase()}`} 
+            href={`#${item.toLowerCase()}`}
             className="nav-link"
-            style={{ 
-              color: 'var(--text-muted)', 
-              textDecoration: 'none', 
-              fontSize: '0.9rem', 
+            style={{
+              color: 'var(--text-muted)',
+              textDecoration: 'none',
+              fontSize: '0.9rem',
               fontWeight: 600,
               textTransform: 'uppercase',
               letterSpacing: '1px'
@@ -106,8 +125,8 @@ const Navbar = () => {
             {item}
           </a>
         ))}
-        <button 
-          className="btn-primary" 
+        <button
+          className="btn-primary"
           style={{ padding: '10px 24px', fontSize: '0.85rem' }}
           onClick={handleLogout}
         >
@@ -123,6 +142,13 @@ const Navbar = () => {
 const Dashboard = () => {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      navigate('/login');
+    }
+  }, [navigate]);
 
   return (
     <PageWrapper>
@@ -172,11 +198,11 @@ const AnimatedRoutes = () => {
 
 function App() {
   return (
-    <VideoProvider>
-      <Router>
+    <Router>
+      <AppProviders>
         <AnimatedRoutes />
-      </Router>
-    </VideoProvider>
+      </AppProviders>
+    </Router>
   );
 }
 

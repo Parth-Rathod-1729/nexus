@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Pause, Maximize, Download, Film, Layers, CheckCircle, AlertCircle, HelpCircle, ChevronDown, ChevronUp, Activity, Lightbulb, Send, RotateCcw } from 'lucide-react';
-import { useVideo } from '../App';
+import { useVideo } from '../contexts';
 
 const BACKEND = () => {
   const raw = import.meta.env.VITE_BACKEND_SERVER || 'http://localhost:4000';

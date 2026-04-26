@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, User, Lock, Mail, Activity, CheckCircle } from 'lucide-react';
+import { ShieldCheck, User, Lock, Mail, Activity, CheckCircle, ArrowLeft } from 'lucide-react';
 import AuthBackground from './AuthBackground';
 
 const pageVariants = {
@@ -64,6 +64,35 @@ const Register = () => {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', padding: '2rem 0' }}>
       <AuthBackground />
+      
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        whileHover={{ x: -5, color: 'var(--neon-violet)' }}
+        onClick={() => navigate('/')}
+        style={{
+          position: 'absolute',
+          top: '40px',
+          left: '40px',
+          background: 'none',
+          border: 'none',
+          color: 'var(--text-muted)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          cursor: 'pointer',
+          zIndex: 100,
+          fontFamily: "'Space Grotesk', sans-serif",
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          letterSpacing: '1px',
+          textTransform: 'uppercase'
+        }}
+      >
+        <ArrowLeft size={20} />
+        RETURN TO NEXUS
+      </motion.button>
       
       <motion.div
         variants={pageVariants}
